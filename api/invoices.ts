@@ -1,18 +1,32 @@
-import { pool } from '../src/db';
+import pg from 'pg';
+const { Pool } = pg;
+
+const DEFAULT_DATABASE_URL = "postgresql://neondb_owner:npg_AnK9Zla0JfiQ@ep-ancient-king-acvx7r22-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require";
 
 export default async function handler(req: any, res: any) {
-  // Pega o ID tanto da query ?id= quanto do final da URL
+  let connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
+  try {
+    const urlObj = new URL(connectionString);
+    urlObj.searchParams.delete("channel_binding");
+    connectionString = urlObj.toString();
+  } catch(e) {}
+
+  const pool = new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    max: 1
+  });
+
   const { id: queryId } = req.query;
   const pathParts = req.url.split('/');
   const lastPart = pathParts[pathParts.length - 1];
   const id = queryId || (lastPart !== 'invoices' ? lastPart : null);
-  
   const { method } = req;
 
+  let client;
   try {
-    const client = await pool.connect();
+    client = await pool.connect();
     
-    // LISTAR
     if (method === 'GET' && !id) {
        const result = await client.query(`
         SELECT i.*, 
@@ -22,18 +36,14 @@ export default async function handler(req: any, res: any) {
         GROUP BY i.id
         ORDER BY i.issue_date DESC
       `);
-      client.release();
       return res.status(200).json(result.rows);
     }
 
-    // EXCLUIR
     if (method === 'DELETE' && id) {
-      const result = await client.query("DELETE FROM invoices WHERE id = $1", [id]);
-      client.release();
+      await client.query("DELETE FROM invoices WHERE id = $1", [id]);
       return res.status(200).json({ success: true });
     }
 
-    // CRIAR
     if (method === 'POST') {
       const { id: newId, number, supplierName, supplierCode, issueDate, dueDate, paymentDate, expectedTotal, items } = req.body;
       await client.query(
@@ -46,11 +56,9 @@ export default async function handler(req: any, res: any) {
           [item.id || String(Date.now() + Math.random()), newId, item.description, item.unitPrice, item.quantity]
         );
       }
-      client.release();
       return res.status(201).json({ success: true });
     }
 
-    // ALTERAR (PUT)
     if (method === 'PUT' && id) {
       const { number, supplierName, supplierCode, issueDate, dueDate, paymentDate, expectedTotal, items } = req.body;
       await client.query("BEGIN");
@@ -66,14 +74,16 @@ export default async function handler(req: any, res: any) {
         );
       }
       await client.query("COMMIT");
-      client.release();
       return res.status(200).json({ success: true });
     }
 
-    client.release();
-    return res.status(404).json({ error: 'Rota ou ID não encontrado' });
+    return res.status(404).json({ error: 'Not found' });
 
   } catch (error: any) {
+    if (client && method === 'PUT') await client.query("ROLLBACK");
     return res.status(500).json({ error: error.message });
+  } finally {
+    if (client) client.release();
+    await pool.end();
   }
 }
