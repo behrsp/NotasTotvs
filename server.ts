@@ -19,14 +19,9 @@ async function ensureDb() {
   }
 }
 
-app.use(async (req, res, next) => {
-  if (req.path.startsWith("/api")) {
-    try {
-      await ensureDb();
-    } catch (err: any) {
-      console.error("Failed lazy db connection:", err);
-    }
-  }
+// Desativado initDb automático para ambiente Serverless (Vercel) para evitar timeouts.
+// As tabelas já devem existir no seu Neon DB.
+app.use((req, res, next) => {
   next();
 });
 
