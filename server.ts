@@ -221,38 +221,12 @@ app.post(["/api/invoices/restore", "/invoices/restore"], async (req, res) => {
   }
 });
 
-// Wrap async startup and middleware loading in a function to avoid active top-level awaits in CJS compilation target
-async function setupViteOrStaticAndListen() {
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    // ESM/CJS relative path resolution for static assets directory
-    let currentDirname = "";
-    try {
-      currentDirname = path.dirname(fileURLToPath(import.meta.url));
-    } catch {
-      currentDirname = __dirname;
-    }
-    const distPath = path.join(currentDirname, "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
-  if (!process.env.VERCEL) {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server currently listening on port ${PORT}`);
-    });
-  }
+// Servidor simplificado para Vercel (Foca apenas na API)
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 }
-
-setupViteOrStaticAndListen().catch((err) => {
-  console.error("Initialization of Vite/static handling failed:", err);
-});
 
 export default app;
