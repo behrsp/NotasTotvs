@@ -28,12 +28,31 @@ export default async function handler(req: any, res: any) {
     client = await pool.connect();
     
     if (method === 'GET' && !id) {
+       // Mapeando nomes do Banco (snake_case) para o Frontend (camelCase)
        const result = await client.query(`
-        SELECT i.*, 
-        COALESCE(json_agg(item.*) FILTER (WHERE item.id IS NOT NULL), '[]') as items
+        SELECT 
+          i.id, 
+          i.number, 
+          i.supplier_name as "supplierName", 
+          i.supplier_code as "supplierCode", 
+          i.issue_date as "issueDate", 
+          i.due_date as "dueDate", 
+          i.payment_date as "paymentDate", 
+          CAST(i.expected_total AS FLOAT) as "expectedTotal",
+          COALESCE(
+            (
+              SELECT json_agg(json_build_object(
+                'id', item.id,
+                'description', item.description,
+                'unitPrice', CAST(item.unit_price AS FLOAT),
+                'quantity', item.quantity
+              ))
+              FROM invoice_items item
+              WHERE item.invoice_id = i.id
+            ), 
+            '[]'
+          ) as items
         FROM invoices i
-        LEFT JOIN invoice_items item ON i.id = item.invoice_id
-        GROUP BY i.id
         ORDER BY i.issue_date DESC
       `);
       return res.status(200).json(result.rows);
@@ -80,7 +99,9 @@ export default async function handler(req: any, res: any) {
     return res.status(404).json({ error: 'Not found' });
 
   } catch (error: any) {
-    if (client && method === 'PUT') await client.query("ROLLBACK");
+    if (client && (method === 'PUT' || method === 'POST')) {
+      try { await client.query("ROLLBACK"); } catch(e) {}
+    }
     return res.status(500).json({ error: error.message });
   } finally {
     if (client) client.release();
