@@ -5,7 +5,18 @@ const { Pool } = pg;
 
 // Neon Connection String from the user
 const DEFAULT_DATABASE_URL = "postgresql://neondb_owner:npg_AnK9Zla0JfiQ@ep-ancient-king-acvx7r22-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require";
-const connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
+let connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
+
+// Limpeza automática de parâmetros do Neon que o node-postgres não suporta
+if (connectionString) {
+  try {
+    const urlObj = new URL(connectionString);
+    urlObj.searchParams.delete("channel_binding");
+    connectionString = urlObj.toString();
+  } catch (e) {
+    console.error("Erro ao tratar string de conexão:", e);
+  }
+}
 
 export const pool = new Pool({
   connectionString,
