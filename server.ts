@@ -36,7 +36,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date() });
 });
 
-app.get("/api/invoices", async (req, res) => {
+app.get(["/api/invoices", "/invoices"], async (req, res) => {
   let client;
   try {
     client = await pool.connect();
@@ -94,7 +94,7 @@ app.get("/api/invoices", async (req, res) => {
   }
 });
 
-app.post("/api/invoices", async (req, res) => {
+app.post(["/api/invoices", "/invoices"], async (req, res) => {
   const { id, number, supplierName, supplierCode, issueDate, dueDate, paymentDate, expectedTotal, items } = req.body;
   if (!id || !number || !supplierName || !supplierCode || !issueDate || !dueDate || expectedTotal === undefined) {
     return res.status(400).json({ error: "Required invoice fields are missing." });
@@ -128,7 +128,7 @@ app.post("/api/invoices", async (req, res) => {
   }
 });
 
-app.put("/api/invoices/:id", async (req, res) => {
+app.put(["/api/invoices/:id", "/invoices/:id"], async (req, res) => {
   const invoiceId = req.params.id;
   const { number, supplierName, supplierCode, issueDate, dueDate, paymentDate, expectedTotal, items } = req.body;
   let client;
@@ -167,7 +167,7 @@ app.put("/api/invoices/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/invoices/:id", async (req, res) => {
+app.delete(["/api/invoices/:id", "/invoices/:id"], async (req, res) => {
   const invoiceId = req.params.id;
   let client;
   try {
@@ -196,7 +196,7 @@ app.delete("/api/invoices/:id", async (req, res) => {
   }
 });
 
-app.post("/api/invoices/restore", async (req, res) => {
+app.post(["/api/invoices/restore", "/invoices/restore"], async (req, res) => {
   const invoices = req.body;
   if (!Array.isArray(invoices)) {
     return res.status(400).json({ error: "Invalid backup data layout." });

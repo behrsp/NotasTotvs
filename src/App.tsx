@@ -125,9 +125,15 @@ export default function App() {
         method: 'DELETE',
       });
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const detailedError = errorData.error || errorData.details || 'Falha ao excluir nota do Neon.';
-        throw new Error(detailedError);
+        let errorInfo = `Status: ${res.status}`;
+        try {
+          const errorData = await res.json();
+          errorInfo += ` - ${errorData.error || errorData.details || 'Erro desconhecido'}`;
+        } catch {
+          const text = await res.text().catch(() => '');
+          if (text) errorInfo += ` - ${text.slice(0, 100)}`;
+        }
+        throw new Error(errorInfo);
       }
       setInvoiceToDelete(null);
       await loadInvoicesFromDb(true);
