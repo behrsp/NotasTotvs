@@ -88,14 +88,14 @@ export default function Dashboard({
     return analyzePriceIncreases(invoices);
   }, [invoices]);
 
-  // Compute overall KPI cards (all-time of current dataset)
+  // Compute overall KPI cards (BASED ON FILTERED DATA)
   const kpi = useMemo(() => {
     let total = 0;
     let paid = 0;
     let outstanding = 0;
     let overdueCount = 0;
 
-    invoices.forEach(inv => {
+    filteredInvoices.forEach(inv => {
       total += inv.expectedTotal;
       const { status } = getInvoiceStatus(inv, currentDateStr);
       if (status === 'Paga') {
@@ -109,7 +109,7 @@ export default function Dashboard({
     });
 
     return { total, paid, outstanding, overdueCount };
-  }, [invoices, currentDateStr]);
+  }, [filteredInvoices, currentDateStr]);
 
   // Chart 1: Invoice sizes comparison (Gráfico comparativo por Nota Fiscal)
   const invoiceComparisonData = useMemo(() => {
@@ -221,7 +221,7 @@ export default function Dashboard({
           <div className="mt-4">
             <h3 className="text-xl font-black text-slate-800 font-mono">{formatCurrency(kpi.total)}</h3>
             <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-              <span>{invoices.length} notas no prontuário geral</span>
+              <span>{filteredInvoices.length} {filteredInvoices.length === 1 ? 'nota filtrada' : 'notas filtradas'} de {invoices.length}</span>
             </p>
           </div>
         </div>
