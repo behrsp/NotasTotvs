@@ -1,0 +1,6 @@
+{
+  "name": "Controle de Notas TOTVS",
+  "description": "Aplicativo para gerenciar notas fiscais de compras da TOTVS SA, monitorar aumento de preços, analisar impacto por item e controlar atrasos de pagamento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
