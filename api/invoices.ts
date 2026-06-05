@@ -28,23 +28,23 @@ export default async function handler(req: any, res: any) {
     client = await pool.connect();
     
     if (method === 'GET' && !id) {
-       // Mapeando nomes do Banco (snake_case) para o Frontend (camelCase)
+       // IMPORTANTE: Convertendo TUDO para string no SQL para evitar conflitos de tipo
        const result = await client.query(`
         SELECT 
           i.id, 
           i.number, 
           i.supplier_name as "supplierName", 
           i.supplier_code as "supplierCode", 
-          i.issue_date as "issueDate", 
-          i.due_date as "dueDate", 
-          i.payment_date as "paymentDate", 
-          CAST(i.expected_total AS FLOAT) as "expectedTotal",
+          CAST(i.issue_date AS TEXT) as "issueDate", 
+          CAST(i.due_date AS TEXT) as "dueDate", 
+          CAST(i.payment_date AS TEXT) as "paymentDate", 
+          CAST(i.expected_total AS TEXT) as "expectedTotalRaw",
           COALESCE(
             (
               SELECT json_agg(json_build_object(
                 'id', item.id,
                 'description', item.description,
-                'unitPrice', CAST(item.unit_price AS FLOAT),
+                'unitPriceRaw', CAST(item.unit_price AS TEXT),
                 'quantity', item.quantity
               ))
               FROM invoice_items item
@@ -55,7 +55,18 @@ export default async function handler(req: any, res: any) {
         FROM invoices i
         ORDER BY i.issue_date DESC
       `);
-      return res.status(200).json(result.rows);
+
+      // Converter strings vindo do banco para números aqui no servidor antes de mandar pro front
+      const processedRows = result.rows.map(row => ({
+        ...row,
+        expectedTotal: parseFloat(row.expectedTotalRaw || '0'),
+        items: row.items.map((item: any) => ({
+          ...item,
+          unitPrice: parseFloat(item.unitPriceRaw || '0')
+        }))
+      }));
+
+      return res.status(200).json(processedRows);
     }
 
     if (method === 'DELETE' && id) {

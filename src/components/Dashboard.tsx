@@ -57,16 +57,24 @@ export default function Dashboard({
       
       // Filter by Month and Year based on Issue Date (Emissão)
       if (inv.issueDate) {
-        // Garantir que temos uma string no formato YYYY-MM
-        const dateStr = typeof inv.issueDate === 'string' ? inv.issueDate : String(inv.issueDate);
-        const parts = dateStr.split(/[-/]/); // Aceita - ou /
+        // Tenta extrair os números da data (Ex: 2026-06-05 -> [2026, 06, 05])
+        const dateMatch = String(inv.issueDate).match(/(\d{4})[-/](\d{2})/);
         
-        if (parts.length >= 2) {
-          const year = parts[0];
-          const month = parts[1];
+        if (dateMatch) {
+          const year = dateMatch[1];
+          const month = dateMatch[2];
           
           if (filterMonth && month !== filterMonth) return false;
           if (filterYear && year !== filterYear) return false;
+        } else {
+          // Se não conseguir extrair via regex, tenta o split básico
+          const parts = String(inv.issueDate).split(/[-/]/);
+          if (parts.length >= 2) {
+            const year = parts[0];
+            const month = parts[1];
+            if (filterMonth && month !== filterMonth) return false;
+            if (filterYear && year !== filterYear) return false;
+          }
         }
       } else {
         return false; 
