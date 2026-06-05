@@ -22,11 +22,9 @@ if (connectionString) {
 
 export const pool = new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false, // Required for Neon secure connection
-  },
-  max: 10,
-  idleTimeoutMillis: 30000,
+  ssl: true,
+  max: 1, 
+  idleTimeoutMillis: 3000,
   connectionTimeoutMillis: 5000,
 });
 

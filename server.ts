@@ -172,25 +172,17 @@ app.delete(["/api/invoices/:id", "/invoices/:id"], async (req, res) => {
   let client;
   try {
     client = await pool.connect();
-    // O banco já possui ON DELETE CASCADE, então deletar da 'invoices' remove os itens automaticamente.
-    // Deletamos em uma transação para garantir consistência.
-    await client.query("BEGIN");
+    // Query direta sem BEGIN/COMMIT manual para evitar problemas de estado de transação em Serverless
     const result = await client.query("DELETE FROM invoices WHERE id = $1", [invoiceId]);
-    await client.query("COMMIT");
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Nota fiscal não encontrada no banco de dados." });
+      return res.status(404).json({ error: "Nota não encontrada." });
     }
 
-    res.json({ success: true, message: "Nota fiscal excluída com sucesso." });
+    res.json({ success: true, message: "Excluída." });
   } catch (err: any) {
-    if (client) await client.query("ROLLBACK");
-    console.error("ERRO CRITICAL NO NEON DB (DELETE):", err);
-    res.status(500).json({ 
-      error: "Erro interno ao excluir do banco Neon.", 
-      details: err.message,
-      code: err.code // O Postgres envia códigos de erro úteis
-    });
+    console.error("ERRO NO NEON:", err.message);
+    res.status(500).json({ error: "Erro no banco Neon", details: err.message });
   } finally {
     if (client) client.release();
   }
