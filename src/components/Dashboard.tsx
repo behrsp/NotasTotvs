@@ -57,12 +57,16 @@ export default function Dashboard({
       
       // Filter by Month and Year based on Issue Date (Emissão)
       if (inv.issueDate) {
-        const [year, month] = inv.issueDate.split('-');
-        if (filterMonth && month !== filterMonth) {
-          return false;
-        }
-        if (filterYear && year !== filterYear) {
-          return false;
+        // Garantir que temos uma string no formato YYYY-MM
+        const dateStr = typeof inv.issueDate === 'string' ? inv.issueDate : String(inv.issueDate);
+        const parts = dateStr.split(/[-/]/); // Aceita - ou /
+        
+        if (parts.length >= 2) {
+          const year = parts[0];
+          const month = parts[1];
+          
+          if (filterMonth && month !== filterMonth) return false;
+          if (filterYear && year !== filterYear) return false;
         }
       } else {
         return false; 
