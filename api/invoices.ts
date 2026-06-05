@@ -81,9 +81,11 @@ export default async function handler(req: any, res: any) {
         [newId, number, supplierName, supplierCode, issueDate, dueDate, paymentDate || null, expectedTotal]
       );
       for (const item of items) {
+        // Gera um ID único para cada item, ignorando o ID que vem do frontend/gabarito
+        const uniqueItemId = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         await client.query(
           'INSERT INTO invoice_items (id, invoice_id, description, unit_price, quantity) VALUES ($1, $2, $3, $4, $5)',
-          [item.id || String(Date.now() + Math.random()), newId, item.description, item.unitPrice, item.quantity]
+          [uniqueItemId, newId, item.description, item.unitPrice, item.quantity]
         );
       }
       return res.status(201).json({ success: true });
@@ -98,9 +100,10 @@ export default async function handler(req: any, res: any) {
       );
       await client.query("DELETE FROM invoice_items WHERE invoice_id = $1", [id]);
       for (const item of items) {
+        const uniqueItemId = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         await client.query(
           "INSERT INTO invoice_items (id, invoice_id, description, unit_price, quantity) VALUES ($1, $2, $3, $4, $5)",
-          [item.id || String(Date.now() + Math.random()), id, item.description, item.unitPrice, item.quantity]
+          [uniqueItemId, id, item.description, item.unitPrice, item.quantity]
         );
       }
       await client.query("COMMIT");
