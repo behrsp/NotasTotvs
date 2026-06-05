@@ -4,28 +4,15 @@ import { Invoice } from './types';
 const { Pool } = pg;
 
 // Neon Connection String from the user
-const DEFAULT_DATABASE_URL = "postgresql://neondb_owner:npg_AnK9Zla0JfiQ@ep-ancient-king-acvx7r22-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-let connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
-
-// Auto-sanitize Neon DB connection parameters that node-postgres does not support (e.g. channel_binding)
-if (connectionString) {
-  try {
-    const urlObj = new URL(connectionString);
-    if (urlObj.searchParams.has("channel_binding")) {
-      urlObj.searchParams.delete("channel_binding");
-    }
-    connectionString = urlObj.toString();
-  } catch (error) {
-    console.error("Failed to parse and sanitize database connection string:", error);
-  }
-}
+const DEFAULT_DATABASE_URL = "postgresql://neondb_owner:npg_AnK9Zla0JfiQ@ep-ancient-king-acvx7r22-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require";
+const connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
 
 export const pool = new Pool({
   connectionString,
-  ssl: true,
+  ssl: { rejectUnauthorized: false }, 
   max: 1, 
-  idleTimeoutMillis: 3000,
-  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 15000,
 });
 
 // Default initial invoices for Neon DB seeding if database is empty
