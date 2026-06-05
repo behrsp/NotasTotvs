@@ -250,7 +250,7 @@ export default function Dashboard({
 
         <div className="bg-white p-5 rounded-2xl border border-rose-150 shadow-sm hover:border-rose-300 transition-all bg-gradient-to-tr from-rose-50/20 to-white">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Notas Atropeladas (Atrasos)</span>
+            <span className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Notas em Atraso</span>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-lg"><AlertTriangle className="w-4 h-4 animate-bounce" /></div>
           </div>
           <div className="mt-4">
