@@ -29,7 +29,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ 
-  invoices, onEdit, onDelete, onOpenForm, onPrintPreview, onPrintAllInvoices, currentDateStr = '2026-06-05' 
+  invoices, onEdit, onDelete, onOpenForm, onPrintPreview, onPrintAllInvoices, currentDateStr 
 }: DashboardProps) {
   // Search and Filters states
   const [searchNF, setSearchNF] = useState('');

@@ -91,8 +91,17 @@ export function formatDate(dateStr: string): string {
   return `${day}/${month}/${year}`;
 }
 
-// Calculate the payment status, checking for delays based on current real-world date context: 2026-06-05
-export function getInvoiceStatus(invoice: Invoice, currentDateStr = '2026-06-05'): {
+// Get current date in YYYY-MM-DD format (local time)
+export function getCurrentDateStr(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Calculate the payment status, checking for delays based on current real-world date context
+export function getInvoiceStatus(invoice: Invoice, currentDateStr = getCurrentDateStr()): {
   status: 'Paga' | 'Pendente' | 'Atrasada';
   daysOverdue: number;
 } {

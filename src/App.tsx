@@ -13,7 +13,7 @@ import InvoiceForm from './components/InvoiceForm';
 import Dashboard from './components/Dashboard';
 import PrintReport from './components/PrintReport';
 import { Invoice } from './types';
-import { INITIAL_INVOICES } from './utils';
+import { INITIAL_INVOICES, getCurrentDateStr } from './utils';
 
 const CACHE_KEY = 'totvs_invoices_db_cache';
 
@@ -225,10 +225,9 @@ export default function App() {
   if (selectedInvoiceForPrinting) {
     return (
       <PrintReport 
-        invoicesToPrint={selectedInvoiceForPrinting}
         title={printTitle}
         onBack={() => setSelectedInvoiceForPrinting(null)}
-        currentDateStr="2026-06-05"
+        currentDateStr={getCurrentDateStr()}
       />
     );
   }
@@ -318,7 +317,7 @@ export default function App() {
         
         {/* WARNINGS & SYSTEM NOTIFICATIONS */}
         <section id="notification-section">
-          <NotificationPanel invoices={invoices} currentDateStr="2026-06-05" />
+          <NotificationPanel invoices={invoices} currentDateStr={getCurrentDateStr()} />
         </section>
 
         {/* INPUT FORM CONTAINER - Toggled dynamically */}
@@ -347,7 +346,7 @@ export default function App() {
             }}
             onPrintPreview={triggerSinglePrint}
             onPrintAllInvoices={triggerBatchPrint}
-            currentDateStr="2026-06-05"
+            currentDateStr={getCurrentDateStr()}
           />
         </section>
 

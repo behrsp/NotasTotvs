@@ -16,7 +16,7 @@ interface PrintReportProps {
 }
 
 export default function PrintReport({ 
-  invoicesToPrint, onBack, title = 'Relatório de Compras Detalhado', currentDateStr = '2026-06-05' 
+  invoicesToPrint, onBack, title = 'Relatório de Compras Detalhado', currentDateStr 
 }: PrintReportProps) {
   // Automatically trigger print on load (optional but friendly)
   const triggerPrint = () => {

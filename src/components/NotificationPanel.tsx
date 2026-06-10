@@ -13,7 +13,7 @@ interface NotificationPanelProps {
   currentDateStr?: string;
 }
 
-export default function NotificationPanel({ invoices, currentDateStr = '2026-06-05' }: NotificationPanelProps) {
+export default function NotificationPanel({ invoices, currentDateStr }: NotificationPanelProps) {
   // Find overdue invoices
   const overdueInvoices = invoices.filter(inv => {
     const { status } = getInvoiceStatus(inv, currentDateStr);
